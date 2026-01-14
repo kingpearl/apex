@@ -10,11 +10,12 @@ const DailyWallpaper = require("daily-wallpaper");
 async function _getBingWallpaper() {
   try {
     const res = await fetch(
-      "http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1",
+      "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US",
     );
     const {
       images: [wallpaperSource],
     } = await res.json();
+    console.log(wallpaperSource);
     return wallpaperSource;
   } catch (err) {
     console.error("Could not fetch wallpaper source from Bing");
@@ -31,8 +32,11 @@ module.exports = async function (directory) {
   dailyWallpaper.getWallpaperSource = async function (done) {
     try {
       const source = await _getBingWallpaper();
+      const url =
+        "http://www.bing.com" + source.url.replaceAll("1920x1080", "UHD");
+      console.log(url);
       done(null, {
-        url: "http://www.bing.com" + source.url,
+        url,
         extension: "jpg",
       });
     } catch (err) {
