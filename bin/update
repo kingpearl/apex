@@ -4,17 +4,18 @@
 
 const { promises: fs, constants } = require("fs");
 const path = require("path");
-const setBingDailyWallpaper = require("../index.js");
+const setWallpaper = require("../index.js");
 const argv = require("minimist")(process.argv.slice(2));
+
+const VALID_SOURCES = new Set(["bing", "walls", "random"]);
 
 const getUserHome = function () {
   return process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"];
 };
 
 async function ensureWallpaperDirectoryExists() {
-  // If --directory is not set, wallpapers go in ~/.bing-wallpapers
   const directory =
-    argv.directory || path.join(getUserHome(), ".bing-wallpapers");
+    argv.directory || path.join(getUserHome(), ".wallpapers");
   try {
     await fs.access(directory, constants.W_OK);
     return directory;
@@ -35,7 +36,14 @@ async function ensureWallpaperDirectoryExists() {
 }
 
 (async function () {
+  const source = argv.source || "random";
+  if (!VALID_SOURCES.has(source)) {
+    console.error(
+      `Invalid --source=${source}. Expected one of: bing, walls, random.`,
+    );
+    process.exit(1);
+  }
   const directory = await ensureWallpaperDirectoryExists();
-  await setBingDailyWallpaper(directory);
+  await setWallpaper(directory, source);
   console.log("Wallpaper updated.");
 })();
